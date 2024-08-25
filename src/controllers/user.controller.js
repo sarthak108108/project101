@@ -106,15 +106,42 @@ const loginUser = asyncHandler(async (req, res) => {
 
     return res
         .status(200)
-        .cookie("access-token", accessToken, cookie)
-        .cookie("refresh-token", refreshToken, cookie)
+        .cookie("accessToken", accessToken, cookie)
+        .cookie("refreshToken", refreshToken, cookie)
         .json(
             new ApiResponse(200, { loggedInUser, accessToken, refreshToken }, `logged in as: ${loggedInUser.username}`)
         )
 
 })
 
+const logoutUser = asyncHandler(async (req, res) => {
+    // verify user is logged in with cookieAuth 
+    // delete cookies in user browser
+    // delete refresh token in database
+
+    await User.findByIdAndUpdate(req.user._id,
+        {
+            $set: {
+                refreshToken: ""
+            }
+        },
+        {
+            returnOriginal: false
+        }
+    )
+
+    return res
+            .status(200)
+            .clearCookie("accessToken", cookie)
+            .clearCookie("refreshToken", cookie)
+            .json(
+                new ApiResponse (200, {}, "user logged out successfully")
+            )
+
+})
+
 export {
     registerUser,
-    loginUser
+    loginUser,
+    logoutUser
 }
