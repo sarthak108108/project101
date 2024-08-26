@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { registerUser, loginUser, logoutUser, fetchUser } from "../controllers/user.controller.js";
+import { registerUser, loginUser, logoutUser, fetchUser, updateUser } from "../controllers/user.controller.js";
 import { cookieAuth } from "../middlewares/auth.middleware.js";
 
 const userRouter = Router()
@@ -13,4 +13,6 @@ userRouter.route('/login').post(loginUser)
 
 userRouter.route('/logout').post(cookieAuth, logoutUser)
 userRouter.route('/fetch-user').post(cookieAuth, fetchUser)
+userRouter.route('/update-details').post(cookieAuth, updateUser)
+
 export default userRouter

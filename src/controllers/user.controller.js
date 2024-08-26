@@ -131,12 +131,12 @@ const logoutUser = asyncHandler(async (req, res) => {
     )
 
     return res
-            .status(200)
-            .clearCookie("accessToken", cookie)
-            .clearCookie("refreshToken", cookie)
-            .json(
-                new ApiResponse (200, {}, "user logged out successfully")
-            )
+        .status(200)
+        .clearCookie("accessToken", cookie)
+        .clearCookie("refreshToken", cookie)
+        .json(
+            new ApiResponse(200, {}, "user logged out successfully")
+        )
 
 })
 
@@ -146,9 +146,53 @@ const fetchUser = asyncHandler(async (req, res) => {
         .json(new ApiResponse(201, req.user, "user fetched successfully"))
 })
 
+const updateUser = asyncHandler(async (req, res) => {
+    const user = req.user
+    const { newName, newUsername, newEmail, newPhoneNumber } = req.body
+
+    const existingUsername = await User.findOne({ newUsername })
+    if (existingUsername) {
+        throw new ApiError(401, "User with username already exists")
+    }
+
+    const existingEmail = await User.findOne({ newEmail })
+    if (existingEmail) {
+        throw new ApiError(401, "User with email already exists")
+    }
+
+    const existingPhoneNumber = await User.findOne({ newPhoneNumber })
+    if (existingPhoneNumber) {
+        throw new ApiError(401, "User with phone-number already exists")
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+        user?._id,
+        {
+            $set: {
+                username: newUsername,
+                email: newEmail,
+                phoneNumber: newPhoneNumber,
+                name: newName
+            }
+        },
+        {
+            new: true
+        }
+    ).select("-password -refeshToken")
+
+    if(!updatedUser){
+        throw new ApiError(500, "something went wrong while trying to update user")
+    }
+
+    return res
+        .status(200)
+        .json(new ApiResponse(201, updatedUser, "user details updated successfully"))
+})
+
 export {
     registerUser,
     loginUser,
     logoutUser,
-    fetchUser
+    fetchUser,
+    updateUser
 }
